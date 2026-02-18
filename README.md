@@ -1,6 +1,27 @@
 # Wellspring Engagement Study
 
-**Deployed at:** [https://oliverbisbee.github.io/wellspring-study/#/title-slide](https://oliverbisbee.github.io/wellspring-study/#/title-slide)
+**Live slideshow:** [https://xaderf.github.io/wellspring-study/](https://xaderf.github.io/wellspring-study/)
+
+## Host Online (GitHub Pages)
+
+This repository is configured to auto-deploy `index.html` to GitHub Pages with GitHub Actions.
+
+1. Push to the `main` branch.
+2. In GitHub, open `Settings` -> `Pages`.
+3. Set **Source** to **GitHub Actions**.
+4. Wait for the `Deploy Slides to GitHub Pages` workflow to finish.
+5. Your public URL will be: `https://xaderf.github.io/wellspring-study/`
+
+## Update the Slideshow
+
+If you edit `wellspring.qmd`, rebuild `index.html` and push:
+
+```bash
+quarto render wellspring.qmd --to revealjs --output index.html
+git add wellspring.qmd index.html
+git commit -m "Update slides"
+git push
+```
 
 ## Overview
 

@@ -1,0 +1,456 @@
+---
+title: "Engagement in Focus: How Family, Gender, and Interests Shape Participation"
+subtitle: "A statistical study on how the new system changes member engagement"
+author: "Oliver Bisbee, Jayden Luo, Ryan Yu, Junze Du, TUT0111-A"
+format:
+  revealjs:
+    theme: simple
+    css: slides.css
+    slide-number: true
+    fontsize: 3.5em
+    width: 1600
+    height: 900
+    margin: 0.1
+    pdf-max-pages-per-slide: 1
+    self-contained: true
+    embed-resources: true
+editor: visual
+---
+
+## Introduction
+
+**Wellspring** is a Canadian cancer support organization offering free programs to anyone affected by cancer. In March 2024, they introduced a new registration system to improve accessibility and engagement.
+
+-   This project explores how factors like parenthood, gender, and personal characteristics relate to program participation, using real member and attendance data.
+
+-   Our goal is to help Wellspring understand what drives program engagement and how to better support diverse members.
+
+## Scope
+
+-   The population of interest includes all individuals who registered with Wellspring and who participated in, or were scheduled to participate in, at least one program between 2023 and early 2024.
+
+-   This includes members of all ages, genders, and backgrounds across Canada, regardless of cancer type, who accessed Wellspring services either online or in person.
+
+Our analyses focus on observed behaviors and characteristics from this population, as recorded in Wellspring's program registration and attendance system.
+
+## Data Summary
+
+This project uses two datasets: <small>
+
+1.  **Member Background:** The dataset includes 4,829 members, capturing demographics, cancer history, and engagement metrics. The average age is approximately 56 years, with female members as the majority.
+
+Most members are from Ontario, with the most common cancer type reported being breast cancer.
+
+Engagement varies widely: the median number of sessions attended by members is 2, but some attended more than 250.
+
+Many fields, including LGBTQ+ status, impairments, and program interests, have high rates of missing data.
+
+2.  **Service Deliveries:** The Service_Deliveries dataset contains 45,254 records of program sessions (attended or missed) for 3,780 members at Wellspring between 2023 and 2024; most sessions were delivered online and most attendance entries are marked as “Present.”
+
+</small>
+
+## Data Summary
+
+**Variables**:
+
+-   **Member Id**: Unique identifier for each member
+-   **Parent of a child under 18**: Whether the member has a child under 18 (Yes / No / Unknown)
+-   **Gender**: Self-identified gender of the member
+-   **Member start year and member start month**
+-   **Age (years)**: Age of the member
+-   **Program Interest**: Programs the member is interested in participating in
+-   **Number of present service deliveries**: Total number of sessions attended
+-   **Number of absent service deliveries**: Total number of sessions missed
+
+</small>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,      # Hide code
+  include = TRUE,   # Do not include output
+  warning = FALSE,   # Suppress warnings
+  message = FALSE,   # Suppress messages
+  results = TRUE   # Hide printed output
+)
+
+# Note: the options above are to hide the code chunk in the slides and to not include the code in the slides
+# There are many other options you can use to customize which parts of the code are run / displayed, 
+# as well as how the output is displayed. 
+# You can learn more at https://quarto.org/docs/computations/execution-options.html
+
+```
+
+```{r data-cleaning, include=FALSE, results=FALSE}
+
+library(tidyverse)
+
+data_patient_members <- read_csv("Member_Background.csv")
+data_attendance_records <- read_csv("Service_Deliveries.csv")
+
+data_patient_members <- data_patient_members %>%
+  select(member_id, parent_of_a_child_under_18, number_of_present_service_deliveries, number_of_absent_service_deliveries)
+
+data_attendance_records <- data_attendance_records %>%
+  select(member_id, attendance_status)
+
+data_combined <- data_patient_members %>%
+  left_join(data_attendance_records, by = "member_id")
+
+data_combined <- data_combined %>%
+  mutate(parent_of_a_child_under_18 = case_when(
+    is.na(parent_of_a_child_under_18) ~ "Unknown",
+    parent_of_a_child_under_18 == "" ~ "Unknown",
+    TRUE ~ as.character(parent_of_a_child_under_18)
+  )) %>%
+  mutate(parent_of_a_child_under_18 = as.factor(parent_of_a_child_under_18),
+         attendance_status = as.factor(attendance_status))
+```
+
+```{r data-cleaning-2, include=FALSE, results=FALSE}
+
+library(tidyverse)
+
+data_patient_members <- read_csv("Member_Background.csv")
+data_attendance_records <- read_csv("Service_Deliveries.csv")
+
+data_patients_sorted <- data_patient_members |>
+  group_by(member_start_year) |>
+  filter(member_start_year == 2023 | member_start_year == 2024) |>
+  ungroup()
+
+data_attendance_proportions <- data_patients_sorted |>
+  mutate(total_appointments = number_of_present_service_deliveries + number_of_absent_service_deliveries,
+         proportion_of_attended = number_of_present_service_deliveries/total_appointments)
+
+data_attendance_proportions
+
+data_patient_under_18 <- data_patient_members %>%
+  select(member_id, parent_of_a_child_under_18, number_of_present_service_deliveries, number_of_absent_service_deliveries)
+
+data_attendance_records <- data_attendance_records %>%
+  select(member_id, attendance_status)
+
+data_combined <- data_patient_under_18 %>%
+  left_join(data_attendance_records, by = "member_id")
+
+data_combined <- data_combined %>%
+  mutate(parent_of_a_child_under_18 = case_when(
+    is.na(parent_of_a_child_under_18) ~ "Unknown",
+    parent_of_a_child_under_18 == "" ~ "Unknown",
+    TRUE ~ as.character(parent_of_a_child_under_18)
+  )) %>%
+  mutate(parent_of_a_child_under_18 = as.factor(parent_of_a_child_under_18),
+         attendance_status = as.factor(attendance_status))
+
+set.seed(123)
+num_trials <- 1000
+sample_size <- nrow(data_patients_sorted)
+test_statistics <- numeric(num_trials)
+
+for (i in 1:num_trials) {
+  boot_sample <- data_patients_sorted |>
+    slice_sample(n = sample_size, replace = TRUE)
+  
+  delta_assuming_no_difference <- boot_sample |>
+    group_by(gender) |>
+    summarise(
+      total_present = sum(number_of_present_service_deliveries, na.rm = TRUE),
+      total_appointments = sum(number_of_present_service_deliveries, na.rm = TRUE) + 
+                           sum(number_of_absent_service_deliveries, na.rm = TRUE),
+      p_hat_present = total_present / total_appointments) |>
+    summarise(diff_p_hat = diff(p_hat_present)) |> 
+    pull(diff_p_hat)
+  
+  test_statistics[i] <- delta_assuming_no_difference
+}
+
+test_statistics_df <- tibble(statistics = test_statistics)
+
+```
+
+# Research Question 1:
+
+::: center
+**How do age, number of program interests, and membership duration jointly predict total services attended?**
+
+This question is addressed by **linear regression**, as it allows us to model the simultaneous influence of multiple continuous predictors on a continuous outcome.
+:::
+
+------------------------------------------------------------------------
+
+### **Method: Multiple Linear Regression**
+
+-   **Goal:** Model the relationship between **age, interests, and membership duration** with **total services attended**.
+-   **Why this method?**\
+    <span style="font-size: 0.8em;">
+    -   Quantifies how each factor affects service attendance.
+    -   Provides **coefficients, confidence intervals, and an R² value** to measure predictive strength.\
+        </span>
+-   **Implementation:**\
+    <span style="font-size: 0.8em;">
+    -   Standard regression techniques in **R** (`lm()` function).
+    -   Model interpretation: "Holding other factors constant, increasing membership duration by X months increases service attendance by Y." </span>
+
+------------------------------------------------------------------------
+
+## How Variables Affect Attendance
+
+```{r, include=TRUE}
+# --- Research Question ---
+# How do a member's age, the number of program interests, and the duration of membership jointly predict the total number of services attended?
+# This question is addressed by linear regression since it allows us to model the simultaneous influence of several continuous predictors on a continuous outcome.
+
+# Reference date: March 2025
+install.packages("ggeffects")
+library(ggeffects)
+
+
+reference_year <- 2025
+reference_month <- 3
+
+data_patient_members <- data_patient_members |>
+  mutate(membership_duration = (reference_year - member_start_year) * 12 +
+                                (reference_month - member_start_month))
+
+# Counting the number of interests (interested programs) for each patient:
+data_patient_members <- data_patient_members |>
+   mutate(num_program_interests = if_else(is.na(program_interest) | program_interest == "", 0L, str_count(program_interest, ";") + 1L))
+
+data_patient_members <- data_patient_members |>
+  mutate(abs_age_years = abs(age_years))
+
+# Fit the multiple linear regression model:
+# Response variable: number_of_present_service_deliveries
+# Predictors: age, num_program_interests, membership_duration
+model <- lm(number_of_present_service_deliveries ~ abs_age_years + num_program_interests + membership_duration,
+            data = data_patient_members, na.action= na.omit)
+
+# --- Custom Plot: Partial Effects for Each Predictor ---
+# Extract predicted partial effects using ggpredict
+pred_age       <- ggpredict(model, terms = "abs_age_years")
+pred_interest  <- ggpredict(model, terms = "num_program_interests")
+pred_duration  <- ggpredict(model, terms = "membership_duration")
+
+# Add an indicator for each predictor
+# This is just the title labels
+pred_age       <- pred_age |> mutate(Predictor = "Absolute Age")
+pred_interest  <- pred_interest |> mutate(Predictor = "Number of Program Interests")
+pred_duration  <- pred_duration |> mutate(Predictor = "Membership Duration")
+
+# Combine predictions into a single data frame
+pred_all <- bind_rows(pred_age, pred_interest, pred_duration)
+
+# Create the custom plot with different colors and facets
+ggplot(pred_all, aes(x = x, y = predicted, color = Predictor)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = Predictor), alpha = 0.2, color = NA) +
+  facet_wrap(~ Predictor, scales = "free_x") + 
+  labs(title = "Partial Effects of Predictors on Service Attendance",
+       x = "Predictor Value",
+       y = "Predicted Number of Service Attendances") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+------------------------------------------------------------------------
+
+## Results of Data
+
+-   **Absolute Age:** <span style="font-size: 0.5em;">
+    -   Older members tend to attend slightly more services
+    -   The effect is modest compared to other factors </span>
+-   **Membership Duration:** <span style="font-size: 0.5em;">
+    -   Membership duration: A strong positive association exists; longer membership is associated with higher attendance. </span>
+-   **Number of Program Interests:** <span style="font-size: 0.5em;">
+    -   Members with more expressed program interests are predicted to attend more services. </span>
+-   **Outreach Recommendations for Wellspring:** <span style="font-size: 0.5em;">
+    -   **Targeted Messaging:** Tailor outreach to meet the unique needs of different age groups
+    -   **Retention Strategies:** Encourage early engagement and maintain long-term member relationships
+    -   **Program Cross-Promotion:** Leverage multiple program interests to invite members to diverse offerings </span>
+
+## Research Question 2
+
+-   **Question**: Do members with children under 18 attend Wellspring services more or less often than those without children?
+
+-   **Relevance**: Understanding attendance patterns based on parental status helps Wellspring identify potential barriers for parents and adjust services accordingly. Examples include offering childcare at events or making events more child-friendly.
+
+## Research Question 2: Table
+
+```{r summary-table, echo=FALSE, results='asis'}
+# install.packages("kableExtra")
+library(kableExtra)
+
+
+data_summary <- data_combined %>%
+  group_by(parent_of_a_child_under_18) %>%
+  summarise(Average_Attended = round(mean(number_of_present_service_deliveries, na.rm = TRUE),2),
+            Total_Members = n()) %>%
+  rename(
+    "Parent Status" = parent_of_a_child_under_18,
+    "Avg. Attended" = Average_Attended,
+    "Total" = Total_Members
+  )
+
+data_summary %>%
+  kable(caption = "Attendance Summary by Parental Status") %>%
+  kable_styling() %>%
+  row_spec(which(data_summary$`Parent Status` == "Unknown"), background = "lightgray") %>%
+  row_spec(which(data_summary$`Parent Status` == "Unknown"), color = "gray")
+```
+
+## Research Question 2: Boxplot
+
+```{r attendance-boxplot, echo=FALSE}
+data_filtered <- data_combined %>%
+  filter(parent_of_a_child_under_18 %in% c("Yes", "No"))
+
+ggplot(data_filtered, aes(x = parent_of_a_child_under_18, y = number_of_present_service_deliveries, fill = parent_of_a_child_under_18)) +
+  geom_boxplot() +
+  labs(title = "Figure 1: Distribution of Attendance by Parental Status",
+       x = "Parental Status",
+       y = "Number of Services Attended") +
+  scale_fill_manual(values = c("Yes" = "skyblue", "No" = "salmon")) +  
+  theme_minimal()
+```
+
+-   Figure 1: Distribution of attendance for members with known parental status (Yes/No). Members with “Unknown” parental status are excluded. Total plotted: 3,780 members.
+
+## Research Question 2: Hypothesis Test
+
+-   Null hypothesis ($H_0$): There is no difference between the two groups
+
+-   Alternative hypothesis ($H_A$): There is a difference between the two groups
+
+-   Using a p-value less than 0.001 from two-proportion testing, there is strong evidence of a difference in attendance between members with children under 18 and those without.
+
+-   We assume these data are representative.
+
+## Research Question 2: Summary
+
+<small>
+
+-   The box-and-whisker plot shows that attendance for members with children tends to be lower than for members without children.
+
+-   The median number of services attended by members with children under 18 is lower than that of members without children, and their attendance values are more concentrated around the median.
+
+-   Limitations: some members chose 'Unknown' for parental status; this may affect the variability shown in Table 1.
+
+-   Other factors, such as work schedules, motivation, and health, may also influence the results but are harder to quantify.
+
+-   Conclusion: Members with children under 18 are less likely to participate in these services compared to members without children.
+
+</small>
+
+## Research Question 3
+
+How has the new registration system affected engagement by gender?
+
+## Why this research question? {.smaller}
+
+We chose this research question because:
+
+-   It is a two-parameter hypothesis testing question.
+
+-   It provides Wellspring with insight into how the registration system is functioning.
+
+The data we get from performing this two parameter hypothesis test will help Wellspring see if the new registration format is affecting client engagement by gender: if there exists a difference between engagement of female clients and male clients. Other gender categories were excluded due to insufficient sample sizes for reliable analysis. Graphs: Table of focused variables from data
+
+```{r data-summary-table, echo=FALSE, results='asis'}
+library(dplyr)  # make sure dplyr is loaded
+
+data_patient_by_gender_summary <- data_attendance_proportions %>%
+  filter(!gender %in% c("Non-Binary", "Trans-Female")) %>%
+  group_by(gender) %>%
+  summarise(
+    n = n(),
+    total_present = sum(number_of_present_service_deliveries, na.rm = TRUE),
+    total_appointments = sum(number_of_present_service_deliveries, na.rm = TRUE) + 
+                         sum(number_of_absent_service_deliveries, na.rm = TRUE),
+    p_hat_present = sum(number_of_present_service_deliveries, na.rm = TRUE) / total_appointments
+  ) %>%
+  rename(
+    "Gender" = gender,
+    "#" = n,
+    "Total present" = total_present,
+    "Total services" = total_appointments,
+    "Proportion of attended" = p_hat_present
+  )
+
+knitr::kable(data_patient_by_gender_summary, caption = "Appointment schedule summary by gender")
+```
+
+## Graph part 3: Boxplot
+
+```{r data-boxplot, results='show', fig.show='hold', echo=FALSE}
+
+ggplot(test_statistics_df, aes(x = statistics)) +
+  geom_boxplot() +
+  labs(title = "Distribution of difference in proportions between genders",
+       x = "Difference in proportion",
+       y = "") +
+  theme_minimal()
+```
+
+## Data/graph Interpretation
+
+From the simulations we ran:
+
+-   Calculated test statistic for the original data is 0.0682739.
+
+-   We can see from the boxplot that the distribution is centered around 0.07–0.08. Thus the p-value is large (not \< 0.05), and we cannot reject the null hypothesis of no difference in engagement between male and female members for the new registration format.
+
+-   We must consider possible type II error and the impact of missing or unspecified gender data, as these factors could affect the results.
+
+## Final summary
+
+Conclusion: Based on the test statistics, there is no statistically significant difference in engagement between male and female members after the new registration format was introduced.
+
+## Limitations of the Data
+
+-   **Limited Variables:** <span style="font-size: 0.5em;">
+    -   Only a few predictors (age, membership duration, number of program interests) were included.
+    -   Additional factors such as socioeconomic status, health conditions, or transportation access might further explain service attendance. </span>
+-   **Data Quality & Completeness:**\
+    <span style="font-size: 0.5em;">
+    -   Potential missing values or measurement errors may impact model reliability.
+    -   The data might not capture nuances like the frequency or type of service events attended. </span>
+-   **Temporal Considerations:**\
+    <span style="font-size: 0.5em;">
+    -   The analysis is cross-sectional and may not reflect seasonal or recent changes in member behavior. </span>
+-   **Additional Variables of Interest:**\
+    <span style="font-size: 0.5em;">
+    -   Demographic details (e.g., income, education level) to understand broader member profiles.
+    -   Psychosocial factors (e.g., motivation, social support) that might influence engagement.
+    -   Detailed event-specific data (e.g., event type, time, and location) to refine the predictive model. </span>
+
+------------------------------------------------------------------------
+
+## Overall Conclusions
+
+Re-summary
+
+-   RQ1: Members who are younger, have more program interests, and have been registered longer tend to attend more services overall.
+
+-   RQ2: Members with children under 18 attended fewer services on average than members without children, suggesting family responsibilities may limit participation.
+
+-   RQ3: After the new registration system was introduced, engagement among different genders shifted slightly, with a modest improvement among female-identifying members.
+
+------------------------------------------------------------------------
+
+## Connections & Insights:
+
+-   Personal and social factors such as family obligations and gender interact with system-level changes (like registration updates) to shape engagement.
+
+-   Structural improvements like system redesign can help. But their impact may vary across subgroups.
+
+-   Program interest is a strong predictor of engagement, suggesting that initial onboarding and motivation may be key.
+
+------------------------------------------------------------------------
+
+## Recommendations / Next Steps:
+
+-   Collect additional variables on employment, caregiving, and scheduling availability to better explain participation gaps.
+
+-   Conduct subgroup analyses across other demographics (e.g., age × gender).
+
+-   Track long-term engagement trends to assess retention beyond the early months.
