@@ -9,8 +9,17 @@ This repository is configured to auto-deploy `index.html` to GitHub Pages with G
 1. Push to the `main` branch.
 2. In GitHub, open `Settings` -> `Pages`.
 3. Set **Source** to **GitHub Actions**.
-4. Wait for the `Deploy Slides to GitHub Pages` workflow to finish.
-5. Your public URL will be: `https://xaderf.github.io/wellspring-study/`
+4. In `Settings` -> `Actions` -> `General`, set **Workflow permissions** to **Read and write permissions**.
+5. Wait for the `Deploy Slides to GitHub Pages` workflow to finish.
+6. Your public URL will be: `https://xaderf.github.io/wellspring-study/`
+
+### If You See `Failed to create deployment (status: 404)`
+
+This usually means GitHub Pages is not enabled for the repo yet, or the workflow token cannot write Pages deployments.
+
+1. Confirm `Settings` -> `Pages` is enabled and set to **GitHub Actions**.
+2. Confirm `Settings` -> `Actions` -> `General` has **Read and write permissions** enabled.
+3. Re-run the failed workflow from the **Actions** tab after saving those settings.
 
 ## Update the Slideshow
 
