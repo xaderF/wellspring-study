@@ -256,14 +256,14 @@ ggplot(pred_all, aes(x = x, y = predicted, color = Predictor)) +
 
 ## Results of Data
 
--   **Absolute Age:** <span style="font-size: 0.5em;">
+-   **Absolute Age:** <span style="font-size: 0.72em;">
     -   Older members tend to attend slightly more services
     -   The effect is modest compared to other factors </span>
--   **Membership Duration:** <span style="font-size: 0.5em;">
+-   **Membership Duration:** <span style="font-size: 0.72em;">
     -   Membership duration: A strong positive association exists; longer membership is associated with higher attendance. </span>
--   **Number of Program Interests:** <span style="font-size: 0.5em;">
+-   **Number of Program Interests:** <span style="font-size: 0.72em;">
     -   Members with more expressed program interests are predicted to attend more services. </span>
--   **Outreach Recommendations for Wellspring:** <span style="font-size: 0.5em;">
+-   **Outreach Recommendations for Wellspring:** <span style="font-size: 0.72em;">
     -   **Targeted Messaging:** Tailor outreach to meet the unique needs of different age groups
     -   **Retention Strategies:** Encourage early engagement and maintain long-term member relationships
     -   **Program Cross-Promotion:** Leverage multiple program interests to invite members to diverse offerings </span>
@@ -294,8 +294,8 @@ data_summary <- data_combined %>%
 data_summary %>%
   kable(caption = "Attendance Summary by Parental Status") %>%
   kable_styling() %>%
-  row_spec(which(data_summary$`Parent Status` == "Unknown"), background = "lightgray") %>%
-  row_spec(which(data_summary$`Parent Status` == "Unknown"), color = "gray")
+  row_spec(which(data_summary$`Parent Status` == "Unknown"), background = "#e5ebf0") %>%
+  row_spec(which(data_summary$`Parent Status` == "Unknown"), color = "#20303d")
 ```
 
 ## Research Question 2: Boxplot
