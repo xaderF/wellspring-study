@@ -2,36 +2,6 @@
 
 **Live slideshow:** [https://xaderf.github.io/wellspring-study/](https://xaderf.github.io/wellspring-study/)
 
-## Host Online (GitHub Pages)
-
-This repository is configured to auto-deploy `index.html` to GitHub Pages with GitHub Actions.
-
-1. Push to the `main` branch.
-2. In GitHub, open `Settings` -> `Pages`.
-3. Set **Source** to **GitHub Actions**.
-4. In `Settings` -> `Actions` -> `General`, set **Workflow permissions** to **Read and write permissions**.
-5. Wait for the `Deploy Slides to GitHub Pages` workflow to finish.
-6. Your public URL will be: `https://xaderf.github.io/wellspring-study/`
-
-### If You See `Failed to create deployment (status: 404)`
-
-This usually means GitHub Pages is not enabled for the repo yet, or the workflow token cannot write Pages deployments.
-
-1. Confirm `Settings` -> `Pages` is enabled and set to **GitHub Actions**.
-2. Confirm `Settings` -> `Actions` -> `General` has **Read and write permissions** enabled.
-3. Re-run the failed workflow from the **Actions** tab after saving those settings.
-
-## Update the Slideshow
-
-If you edit `wellspring.qmd`, rebuild `index.html` and push:
-
-```bash
-quarto render wellspring.qmd --to revealjs --output index.html
-git add wellspring.qmd index.html
-git commit -m "Update slides"
-git push
-```
-
 ## Overview
 
 This project analyzes member engagement at **Wellspring**, a Canadian cancer support organization, following the introduction of a new registration system in March 2024. The study explores how **family status, gender, age, and program interests** relate to participation in Wellspring programs.
