@@ -8,6 +8,7 @@ format:
     css: slides.css
     slide-number: true
     fontsize: 3.5em
+    center: true
     width: 1600
     height: 900
     margin: 0.1
@@ -21,6 +22,8 @@ editor: visual
 
 **Wellspring** is a Canadian cancer support organization offering free programs to anyone affected by cancer. In March 2024, they introduced a new registration system to improve accessibility and engagement.
 
+## Introduction: Continue
+
 -   This project explores how factors like parenthood, gender, and personal characteristics relate to program participation, using real member and attendance data.
 
 -   Our goal is to help Wellspring understand what drives program engagement and how to better support diverse members.
@@ -29,11 +32,13 @@ editor: visual
 
 -   The population of interest includes all individuals who registered with Wellspring and who participated in, or were scheduled to participate in, at least one program between 2023 and early 2024.
 
+## Scope: Continue {.smaller}
+
 -   This includes members of all ages, genders, and backgrounds across Canada, regardless of cancer type, who accessed Wellspring services either online or in person.
 
 Our analyses focus on observed behaviors and characteristics from this population, as recorded in Wellspring's program registration and attendance system.
 
-## Data Summary
+## Data Summary {.smaller}
 
 This project uses two datasets: <small>
 
@@ -43,13 +48,19 @@ Most members are from Ontario, with the most common cancer type reported being b
 
 Engagement varies widely: the median number of sessions attended by members is 2, but some attended more than 250.
 
-Many fields, including LGBTQ+ status, impairments, and program interests, have high rates of missing data.
+</small>
+
+## Data Summary: Continue {.smaller}
+
+<small>
+
+-   Many fields, including LGBTQ+ status, impairments, and program interests, have high rates of missing data.
 
 2.  **Service Deliveries:** The Service_Deliveries dataset contains 45,254 records of program sessions (attended or missed) for 3,780 members at Wellspring between 2023 and 2024; most sessions were delivered online and most attendance entries are marked as “Present.”
 
 </small>
 
-## Data Summary
+## Data Summary: Variables {.smaller}
 
 **Variables**:
 
@@ -57,12 +68,13 @@ Many fields, including LGBTQ+ status, impairments, and program interests, have h
 -   **Parent of a child under 18**: Whether the member has a child under 18 (Yes / No / Unknown)
 -   **Gender**: Self-identified gender of the member
 -   **Member start year and member start month**
+
+## Data Summary: Variables: Continue {.smaller}
+
 -   **Age (years)**: Age of the member
 -   **Program Interest**: Programs the member is interested in participating in
 -   **Number of present service deliveries**: Total number of sessions attended
 -   **Number of absent service deliveries**: Total number of sessions missed
-
-</small>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -176,20 +188,20 @@ test_statistics_df <- tibble(statistics = test_statistics)
 This question is addressed by **linear regression**, as it allows us to model the simultaneous influence of multiple continuous predictors on a continuous outcome.
 :::
 
-------------------------------------------------------------------------
+## Research Question 1: Continue
 
 ### **Method: Multiple Linear Regression**
 
 -   **Goal:** Model the relationship between **age, interests, and membership duration** with **total services attended**.
--   **Why this method?**\
-    <span style="font-size: 0.8em;">
+-   **Why this method?**
     -   Quantifies how each factor affects service attendance.
-    -   Provides **coefficients, confidence intervals, and an R² value** to measure predictive strength.\
-        </span>
--   **Implementation:**\
-    <span style="font-size: 0.8em;">
+    -   Provides **coefficients, confidence intervals, and an R² value** to measure predictive strength.
+
+## Research Question 1: Method: Continue {.smaller}
+
+-   **Implementation**
     -   Standard regression techniques in **R** (`lm()` function).
-    -   Model interpretation: "Holding other factors constant, increasing membership duration by X months increases service attendance by Y." </span>
+    -   Model interpretation: "Holding other factors constant, increasing membership duration by X months increases service attendance by Y."
 
 ------------------------------------------------------------------------
 
@@ -254,7 +266,7 @@ ggplot(pred_all, aes(x = x, y = predicted, color = Predictor)) +
 
 ------------------------------------------------------------------------
 
-## Results of Data
+## Results of Data {.smaller}
 
 -   **Absolute Age:** <span style="font-size: 0.72em;">
     -   Older members tend to attend slightly more services
@@ -263,6 +275,9 @@ ggplot(pred_all, aes(x = x, y = predicted, color = Predictor)) +
     -   Membership duration: A strong positive association exists; longer membership is associated with higher attendance. </span>
 -   **Number of Program Interests:** <span style="font-size: 0.72em;">
     -   Members with more expressed program interests are predicted to attend more services. </span>
+
+## Results of Data: Continue {.smaller}
+
 -   **Outreach Recommendations for Wellspring:** <span style="font-size: 0.72em;">
     -   **Targeted Messaging:** Tailor outreach to meet the unique needs of different age groups
     -   **Retention Strategies:** Encourage early engagement and maintain long-term member relationships
@@ -272,7 +287,10 @@ ggplot(pred_all, aes(x = x, y = predicted, color = Predictor)) +
 
 -   **Question**: Do members with children under 18 attend Wellspring services more or less often than those without children?
 
--   **Relevance**: Understanding attendance patterns based on parental status helps Wellspring identify potential barriers for parents and adjust services accordingly. Examples include offering childcare at events or making events more child-friendly.
+## Research Question 2: Why It Matters
+
+-   **Relevance**: Understanding attendance patterns based on parental status helps Wellspring identify potential barriers for parents and adjust services accordingly.
+-   Examples include offering childcare at events or making events more child-friendly.
 
 ## Research Question 2: Table
 
@@ -315,7 +333,7 @@ ggplot(data_filtered, aes(x = parent_of_a_child_under_18, y = number_of_present_
 
 -   Figure 1: Distribution of attendance for members with known parental status (Yes/No). Members with “Unknown” parental status are excluded. Total plotted: 3,780 members.
 
-## Research Question 2: Hypothesis Test
+## Research Question 2: Hypothesis Test {.smaller}
 
 -   Null hypothesis ($H_0$): There is no difference between the two groups
 
@@ -325,7 +343,7 @@ ggplot(data_filtered, aes(x = parent_of_a_child_under_18, y = number_of_present_
 
 -   We assume these data are representative.
 
-## Research Question 2: Summary
+## Research Question 2: Summary {.smaller}
 
 <small>
 
@@ -353,7 +371,11 @@ We chose this research question because:
 
 -   It provides Wellspring with insight into how the registration system is functioning.
 
-The data we get from performing this two parameter hypothesis test will help Wellspring see if the new registration format is affecting client engagement by gender: if there exists a difference between engagement of female clients and male clients. Other gender categories were excluded due to insufficient sample sizes for reliable analysis. Graphs: Table of focused variables from data
+The data we get from performing this two parameter hypothesis test will help Wellspring see if the new registration format is affecting client engagement by gender: if there exists a difference between engagement of female clients and male clients. Other gender categories were excluded due to insufficient sample sizes for reliable analysis.
+
+## Why this research question?: Continue {.smaller}
+
+Focused variables by gender:
 
 ```{r data-summary-table, echo=FALSE, results='asis'}
 library(dplyr)  # make sure dplyr is loaded
@@ -397,6 +419,8 @@ From the simulations we ran:
 
 -   Calculated test statistic for the original data is 0.0682739.
 
+## Data/graph Interpretation: Continue {.smaller}
+
 -   We can see from the boxplot that the distribution is centered around 0.07–0.08. Thus the p-value is large (not \< 0.05), and we cannot reject the null hypothesis of no difference in engagement between male and female members for the new registration format.
 
 -   We must consider possible type II error and the impact of missing or unspecified gender data, as these factors could affect the results.
@@ -405,27 +429,30 @@ From the simulations we ran:
 
 Conclusion: Based on the test statistics, there is no statistically significant difference in engagement between male and female members after the new registration format was introduced.
 
-## Limitations of the Data
+## Limitations of the Data {.smaller}
 
--   **Limited Variables:** <span style="font-size: 0.5em;">
+-   **Limited Variables:** <span style="font-size: 0.72em;">
     -   Only a few predictors (age, membership duration, number of program interests) were included.
     -   Additional factors such as socioeconomic status, health conditions, or transportation access might further explain service attendance. </span>
 -   **Data Quality & Completeness:**\
-    <span style="font-size: 0.5em;">
+    <span style="font-size: 0.72em;">
     -   Potential missing values or measurement errors may impact model reliability.
     -   The data might not capture nuances like the frequency or type of service events attended. </span>
+
+## Limitations of the Data: Continue {.smaller}
+
 -   **Temporal Considerations:**\
-    <span style="font-size: 0.5em;">
+    <span style="font-size: 0.72em;">
     -   The analysis is cross-sectional and may not reflect seasonal or recent changes in member behavior. </span>
 -   **Additional Variables of Interest:**\
-    <span style="font-size: 0.5em;">
+    <span style="font-size: 0.72em;">
     -   Demographic details (e.g., income, education level) to understand broader member profiles.
     -   Psychosocial factors (e.g., motivation, social support) that might influence engagement.
     -   Detailed event-specific data (e.g., event type, time, and location) to refine the predictive model. </span>
 
 ------------------------------------------------------------------------
 
-## Overall Conclusions
+## Overall Conclusions {.smaller}
 
 Re-summary
 
@@ -437,7 +464,7 @@ Re-summary
 
 ------------------------------------------------------------------------
 
-## Connections & Insights:
+## Connections & Insights: {.smaller}
 
 -   Personal and social factors such as family obligations and gender interact with system-level changes (like registration updates) to shape engagement.
 
@@ -447,7 +474,7 @@ Re-summary
 
 ------------------------------------------------------------------------
 
-## Recommendations / Next Steps:
+## Recommendations / Next Steps: {.smaller}
 
 -   Collect additional variables on employment, caregiving, and scheduling availability to better explain participation gaps.
 
